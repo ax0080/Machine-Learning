@@ -339,7 +339,13 @@ int main()
             }
             Error += pow(sum-b[i], 2);
         }
-        epsilon = Error / x.size();
+
+        //loss
+        epsilon = 0;
+        for(int i=0; i<n_poly; i++)
+        {
+            epsilon = pow(coeff[i]-coeff_1[i], 2);
+        }
         Iter++;
     }
     Iter = 0;
