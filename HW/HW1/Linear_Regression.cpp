@@ -8,6 +8,7 @@
 #include <math.h>
 #include <algorithm>
 #include <random>
+#include <SFML/Graphics.hpp>
 
 using namespace std;
 
@@ -66,17 +67,6 @@ int main()
         }
     }
 
-    /*
-    printf("Print A\n");
-    for(int i=0; i < x.size(); i++)
-    {
-        for(int j=0; j < n_poly; j++)
-        {
-            printf("%lf ", matrix[i][j]);
-        }
-        printf("\n");
-    }
-    */
 
     //A_T
     double **matrix_T = new double*[n_poly];
@@ -127,6 +117,7 @@ int main()
     double **matrix_ATA_inv = new double*[n_poly];
     for(int i = 0; i < n_poly; i++)
         matrix_ATA_inv[i] = new double[n_poly];
+
     
     //**************************2.Matrix Calculation*************************//
     //matrix_temp1 = ATA
@@ -250,7 +241,7 @@ int main()
         Error += pow(sum-b[i], 2);
     }
     printf("Total Error: %lf\n", Error);
-
+    printf("\n");
     matrix_reset(matrix_temp1, n_poly);
     matrix_reset(matrix_temp2, n_poly);
     matrix_reset(matrix_temp3, n_poly);
@@ -258,10 +249,7 @@ int main()
 
 
     //**************************4.Steepest Descent*************************//
-
-    //**************************5.Newtons Method*************************//
     coeff.reserve(n_poly);
-    printf("\n");
     coeff_temp1.reserve(n_poly);
     coeff_temp2.reserve(n_poly);
     coeff_temp3.reserve(n_poly);
@@ -273,14 +261,95 @@ int main()
     for(int i=0; i<n_poly; i++)
     {
         coeff_1.push_back(dist(gen));
-        //printf("coeff = %lf\n", coeff_1[i]);
     }
 
-    double epsilon = 100;
+    double epsilon = 10000;
     double epsilon_max = 1e-6;
 
     int Iter = 0;
     int maxIterations = 100;
+
+    while(epsilon > epsilon_max && Iter < 100)
+    {
+        //Xn = Xn-1 - learning rate * ( 2(ATAx-ATb) + lambda*sign(x) )
+        matrix_mul_vector(matrix_ATA, coeff_1, coeff_temp1, n_poly, n_poly);
+        matrix_mul_vector(matrix_T, b, coeff_temp2, n_poly, x.size());
+        vector_minus(coeff_temp1, coeff_temp2, coeff_temp3, n_poly);
+
+        for(int i=0; i<n_poly; i++)
+        {
+            coeff_temp3[i]*=2;
+            if(coeff_1[i]>0) coeff_temp3[i] += lambda;
+            else if(coeff_1[i]<0) coeff_temp3[i] -= lambda;
+            coeff_temp3[i]*=0.00001;
+        }
+
+        vector_minus(coeff_1, coeff_temp3, coeff, n_poly);
+        
+
+        //Error
+        Error = 0;
+        for(int i=0; i<b.size(); i++)
+        {
+            double sum = 0;
+            for(int j=n_poly-1; j>=0; j--)
+            {
+                sum += coeff[n_poly-1-j]*pow(x[i], j);
+                
+            }
+            Error += pow(sum-b[i], 2);
+        }
+
+        //loss
+        epsilon = 0;
+        for(int i=0; i<n_poly; i++)
+        {
+            epsilon += pow(coeff[i]-coeff_1[i], 2);
+        }
+
+        for(int i=0; i<n_poly; i++)
+        {
+            coeff_1[i]=coeff[i];
+        }
+
+        Iter++;
+    }
+
+
+    //Print Fitting Line
+    printf("Steepest Descent: \n");
+    printf("Fitting Line: ");
+    for(int i=n_poly-1; i>=0; i--)
+    {
+        if(i>0) printf("%lfx^%d + ", coeff[n_poly-1-i], i);
+        else printf("%lf\n", coeff[n_poly-1]);
+    }
+    printf("Total Error: %lf\n", Error);
+    printf("\n");
+    coeff.clear();
+    coeff_1.clear();
+    coeff_temp1.clear();
+    coeff_temp2.clear();
+    coeff_temp3.clear();
+
+
+    //**************************5.Newtons Method*************************//
+    coeff.reserve(n_poly);
+    coeff_temp1.reserve(n_poly);
+    coeff_temp2.reserve(n_poly);
+    coeff_temp3.reserve(n_poly);
+
+
+    for(int i=0; i<n_poly; i++)
+    {
+        coeff_1.push_back(dist(gen));
+    }
+
+    epsilon = 100;
+    epsilon_max = 1e-6;
+
+    Iter = 0;
+    maxIterations = 100;
     
     //LU Decomposition, matrix_temp2 is U and matrix_temp3 is L
     matrix_LU(matrix_ATA, matrix_temp2, matrix_temp3, n_poly);
@@ -344,8 +413,15 @@ int main()
         epsilon = 0;
         for(int i=0; i<n_poly; i++)
         {
-            epsilon = pow(coeff[i]-coeff_1[i], 2);
+            epsilon += pow(coeff[i]-coeff_1[i], 2);
         }
+
+        ///*
+        for(int i=0; i<n_poly; i++)
+        {
+            coeff_1[i]=coeff[i];
+        }
+        //*/
         Iter++;
     }
     Iter = 0;
@@ -358,8 +434,12 @@ int main()
         if(i>0) printf("%lfx^%d + ", coeff[n_poly-1-i], i);
         else printf("%lf\n", coeff[n_poly-1]);
     }
-    printf("Total Error: %lf", Error);
-
+    printf("Total Error: %lf\n", Error);
+    coeff.clear();
+    coeff_1.clear();
+    coeff_temp1.clear();
+    coeff_temp2.clear();
+    coeff_temp3.clear();
 
     //**************************6.Dynamic Array Release*************************//
     for(int i = 0; i < n_poly; i++)
@@ -386,6 +466,7 @@ int main()
     for(int i = 0; i < n_poly; i++)
         delete [] matrix_ATA_inv[i];
     delete [] matrix_ATA_inv;
+
 
     system("pause");
     return 0;
