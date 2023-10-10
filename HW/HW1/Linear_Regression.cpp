@@ -8,7 +8,7 @@
 #include <math.h>
 #include <algorithm>
 #include <random>
-#include <SFML/Graphics.hpp>
+
 
 using namespace std;
 
@@ -227,7 +227,7 @@ int main()
         if(i>0) printf("%lfx^%d + ", coeff[n_poly-1-i], i);
         else printf("%lf\n", coeff[n_poly-1]);
     }
-    
+
     //Print Total Error
     double Error = 0; 
     for(int i=0; i<b.size(); i++)
@@ -247,6 +247,20 @@ int main()
     matrix_reset(matrix_temp3, n_poly);
     coeff.clear();
 
+    //output file
+    ofstream Outputfile1("LSE.txt");
+    if (!Outputfile1) {
+        printf("Open output file error\n");
+        return 1;
+    }
+
+    for(int i=0; i<n_poly; i++)
+    {
+        Outputfile1 << coeff[i] << " ";
+    }
+    Outputfile1 << endl;
+
+    Outputfile1.close();
 
     //**************************4.Steepest Descent*************************//
     coeff.reserve(n_poly);
@@ -326,6 +340,23 @@ int main()
     }
     printf("Total Error: %lf\n", Error);
     printf("\n");
+
+    //output file
+    ofstream Outputfile2("Steepest_Descent.txt");
+    if (!Outputfile2) {
+        printf("Open output file error\n");
+        return 1;
+    }
+
+    for(int i=0; i<n_poly; i++)
+    {
+        Outputfile2 << coeff[i] << " ";
+    }
+    Outputfile2 << endl;
+
+    Outputfile2.close();
+
+    //vector reset
     coeff.clear();
     coeff_1.clear();
     coeff_temp1.clear();
@@ -435,6 +466,24 @@ int main()
         else printf("%lf\n", coeff[n_poly-1]);
     }
     printf("Total Error: %lf\n", Error);
+
+    //output file
+    ofstream Outputfile3("Newton's Method.txt");
+    if (!Outputfile3) {
+        printf("Open output file error\n");
+        return 1;
+    }
+
+    for(int i=0; i<n_poly; i++)
+    {
+        Outputfile3 << coeff[i] << " ";
+    }
+    Outputfile3 << endl;
+
+    Outputfile3.close();
+
+
+    //vector reset
     coeff.clear();
     coeff_1.clear();
     coeff_temp1.clear();

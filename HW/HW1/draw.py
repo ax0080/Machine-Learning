@@ -17,7 +17,7 @@ x = np.linspace(min(x_values), max(x_values), 100)
 fig, axes = plt.subplots(nrows=3, ncols=1, figsize=(8, 10))
 
 # 读取并绘制三个多项式
-polynomial_files = ['LSE.txt', 'steepest.txt', 'newtons.txt']
+polynomial_files = ['LSE.txt', 'Steepest_Descent.txt', "Newton's Method.txt"]
 titles = ['LSE', 'Steepest', 'Newtons']  # 添加标题列表
 
 for i, file_name in enumerate(polynomial_files):
